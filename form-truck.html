@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NBF 2026 — Scheda Food Truck</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:       #c8860a;
+      --amber-dark:  #a86e08;
+      --amber-light: #fef3d8;
+      --brown:       #2d1a06;
+      --brown-mid:   #7a5c30;
+      --cream:       #f7f0e2;
+      --border:      #e0cfa8;
+      --error:       #c0392b;
+      --green:       #2d7a4e;
+      --blue:        #1a6b8a;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--cream);
+      color: var(--brown);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+      line-height: 1.5;
+    }
+
+    .container { max-width: 700px; margin: 0 auto; }
+
+    /* ── Thank you ───────────────────────────────────── */
+    .grazie-card {
+      display: none;
+      text-align: center;
+      background: #fff;
+      border-radius: 1rem;
+      padding: 3rem 2rem;
+      box-shadow: 0 1px 6px rgba(45,26,6,.07), 0 4px 18px rgba(45,26,6,.04);
+      margin-top: 2rem;
+    }
+    .grazie-card .icon  { font-size: 3rem; margin-bottom: 1rem; }
+    .grazie-card h1     { font-size: 1.6rem; font-weight: 800; margin-bottom: .5rem; }
+    .grazie-card p      { color: var(--brown-mid); }
+
+    /* ── Header ──────────────────────────────────────── */
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .tag {
+      display: inline-block;
+      background: var(--amber);
+      color: #fff;
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: .22rem .85rem;
+      border-radius: 99px;
+      margin-bottom: .75rem;
+    }
+    .header h1 { font-size: 1.85rem; font-weight: 800; margin-bottom: .2rem; }
+    .header p  { color: var(--brown-mid); font-size: .9rem; }
+
+    /* ── Cards ───────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 1px 6px rgba(45,26,6,.07), 0 4px 18px rgba(45,26,6,.04);
+    }
+    .card-title {
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── Fields ──────────────────────────────────────── */
+    .field { margin-bottom: 1rem; }
+    .field:last-child { margin-bottom: 0; }
+    .field label {
+      display: block;
+      font-size: .82rem;
+      font-weight: 700;
+      margin-bottom: .35rem;
+    }
+    .req { color: var(--amber); }
+    .field input[type="text"],
+    .field input[type="tel"],
+    .field textarea {
+      width: 100%;
+      padding: .6rem .85rem;
+      border: 1.5px solid var(--border);
+      border-radius: .5rem;
+      font-size: .95rem;
+      color: var(--brown);
+      background: #fdfaf5;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .field input:focus, .field textarea:focus {
+      outline: none;
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px rgba(200,134,10,.13);
+      background: #fff;
+    }
+    .field textarea { resize: vertical; min-height: 80px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .field.invalid input { border-color: var(--error); }
+    .err-msg { font-size: .78rem; color: var(--error); margin-top: .3rem; display: none; }
+    .field.invalid .err-msg { display: block; }
+
+    /* ── Dish table ───────────────────────────────────── */
+    .dish-header {
+      display: grid;
+      grid-template-columns: 1fr 90px 50px 50px 28px;
+      gap: .5rem;
+      padding: 0 .5rem;
+      margin-bottom: .35rem;
+    }
+    .dish-header span {
+      font-size: .68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--brown-mid);
+      text-align: center;
+    }
+    .dish-header span:first-child { text-align: left; }
+
+    .dish-list { display: flex; flex-direction: column; gap: .5rem; }
+
+    .dish-row {
+      display: grid;
+      grid-template-columns: 1fr 90px 50px 50px 28px;
+      gap: .5rem;
+      align-items: center;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: .6rem;
+      padding: .6rem .5rem;
+      animation: slideIn .15s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .dish-name {
+      width: 100%;
+      padding: .45rem .6rem;
+      border: 1px solid var(--border);
+      border-radius: .4rem;
+      font-size: .9rem;
+      background: #fff;
+      color: var(--brown);
+      transition: border-color .15s;
+    }
+    .dish-name:focus { outline: none; border-color: var(--amber); }
+
+    .dish-price {
+      width: 100%;
+      padding: .45rem .3rem;
+      border: 1px solid var(--border);
+      border-radius: .4rem;
+      font-size: .88rem;
+      background: #fff;
+      color: var(--brown);
+      text-align: center;
+      cursor: pointer;
+    }
+    .dish-price:focus { outline: none; border-color: var(--amber); }
+
+    .check-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .1rem;
+    }
+    .check-col input[type="checkbox"] {
+      width: 1.05rem;
+      height: 1.05rem;
+      accent-color: var(--amber);
+      cursor: pointer;
+    }
+    .check-col .lbl-veg { font-size: .62rem; font-weight: 800; color: var(--green); }
+    .check-col .lbl-gf  { font-size: .62rem; font-weight: 800; color: var(--blue);  }
+
+    .del-btn {
+      background: none;
+      border: none;
+      color: #c9a07a;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: .2rem;
+      line-height: 1;
+      transition: color .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .del-btn:hover { color: var(--error); }
+
+    .add-dish {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      margin-top: .75rem;
+      padding: .5rem 1rem;
+      border: 1.5px dashed var(--amber);
+      background: none;
+      border-radius: .5rem;
+      color: var(--amber);
+      font-size: .85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .add-dish:hover { background: var(--amber-light); }
+
+    .dish-legend {
+      margin-top: .75rem;
+      font-size: .78rem;
+      color: var(--brown-mid);
+      line-height: 1.7;
+    }
+
+    #dishErr { font-size: .78rem; color: var(--error); margin-top: .5rem; display: none; }
+
+    /* ── Photo section ───────────────────────────────── */
+    .photo-add-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .65rem 1.25rem;
+      border: 1.5px dashed var(--amber);
+      background: none;
+      border-radius: .5rem;
+      color: var(--amber);
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+      margin-bottom: 1rem;
+    }
+    .photo-add-btn:hover { background: var(--amber-light); }
+    .photo-add-btn:disabled { opacity: .4; cursor: default; }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: .5rem;
+    }
+    .photo-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: .5rem;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-item .rm {
+      position: absolute;
+      top: .2rem;
+      right: .2rem;
+      background: rgba(0,0,0,.5);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      width: 1.4rem;
+      height: 1.4rem;
+      font-size: .7rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s;
+    }
+    .photo-item .rm:hover { background: rgba(192,57,43,.85); }
+
+    #photoErr { font-size: .78rem; color: var(--error); margin-top: .5rem; display: none; }
+
+    /* ── Submit ──────────────────────────────────────── */
+    .submit-btn {
+      width: 100%;
+      padding: .9rem;
+      background: var(--amber);
+      color: #fff;
+      border: none;
+      border-radius: .75rem;
+      font-size: 1.05rem;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: .03em;
+      transition: background .15s, transform .1s;
+      margin-top: .5rem;
+    }
+    .submit-btn:hover  { background: var(--amber-dark); }
+    .submit-btn:active { transform: scale(.99); }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 520px) {
+      .field-row { grid-template-columns: 1fr; }
+      .dish-header { display: none; }
+      .dish-row { grid-template-columns: 1fr 80px; grid-template-rows: auto auto; row-gap: .4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Thank you -->
+  <div class="grazie-card" id="grazie">
+    <div class="icon">🍺</div>
+    <h1>Scheda ricevuta!</h1>
+    <p>Grazie, Lorenzo ti contatterà presto per i dettagli del festival.</p>
+  </div>
+
+  <!-- Form -->
+  <div id="formWrap">
+    <div class="header">
+      <div class="tag">NBF 2026 · 24–26 Luglio</div>
+      <h1>Scheda Food Truck</h1>
+      <p>Nugola Beer Fest — Nugola, Collesalvetti (LI)</p>
+    </div>
+
+    <form
+      id="form"
+      action="https://formsubmit.co/lorenzo.monacci@gmail.com"
+      method="POST"
+      enctype="multipart/form-data"
+      novalidate
+    >
+      <!-- FormSubmit config -->
+      <input type="hidden" name="_subject" value="NBF 2026 — Scheda food truck">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" id="nextUrl" value="">
+      <input type="hidden" name="Menu" id="menuData">
+
+      <!-- Dati truck -->
+      <div class="card">
+        <div class="card-title">Dati del truck</div>
+
+        <div class="field" id="f-name">
+          <label>Nome del truck <span class="req">*</span></label>
+          <input type="text" name="Nome truck" id="truckName" placeholder="Nome truck" autocomplete="off">
+          <div class="err-msg">Campo obbligatorio.</div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Referente</label>
+            <input type="text" name="Referente" id="referente" placeholder="Nome e cognome" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Telefono</label>
+            <input type="tel" name="Telefono" id="telefono" placeholder="+39 333 000 0000">
+          </div>
+        </div>
+      </div>
+
+      <!-- Menù -->
+      <div class="card">
+        <div class="card-title">Menù</div>
+
+        <div class="dish-header">
+          <span>Piatto</span>
+          <span>Prezzo</span>
+          <span>Veg</span>
+          <span>GF</span>
+          <span></span>
+        </div>
+
+        <div class="dish-list" id="dishList"></div>
+        <div id="dishErr">Inserisci almeno un piatto con nome e prezzo.</div>
+        <button type="button" class="add-dish" id="addDish">+ Aggiungi piatto</button>
+
+        <div class="dish-legend">
+          <strong>Veg</strong> = vegano &nbsp;·&nbsp; <strong>GF</strong> = senza glutine<br>
+          Se non spunti nulla è onnivoro e con glutine. Prezzo in euro interi (1 token = 1 €).
+        </div>
+      </div>
+
+      <!-- Foto -->
+      <div class="card">
+        <div class="card-title">Foto del truck <span class="req">*</span></div>
+        <p style="font-size:.85rem;color:var(--brown-mid);margin-bottom:1rem;">
+          Almeno una foto obbligatoria — ci serve per promuoverti sui social. Puoi aggiungerne quante vuoi.
+        </p>
+
+        <button type="button" class="photo-add-btn" id="photoAddBtn">📷 Aggiungi foto</button>
+        <div class="photo-grid" id="photoGrid"></div>
+        <div id="photoErr">Carica almeno una foto del truck.</div>
+      </div>
+
+      <!-- Note -->
+      <div class="card">
+        <div class="card-title">Note (opzionale)</div>
+        <div class="field" style="margin:0">
+          <textarea name="Note" id="note" placeholder="Orari particolari, allergeni, esigenze logistiche…"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Invia scheda →</button>
+    </form>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+// ── Thank you state ────────────────────────────────
+if (new URLSearchParams(location.search).get('inviato') === '1') {
+  document.getElementById('grazie').style.display = 'block';
+  document.getElementById('formWrap').style.display = 'none';
+}
+
+// Set _next to current URL + ?inviato=1
+document.getElementById('nextUrl').value =
+  location.origin + location.pathname + '?inviato=1';
+
+// ── Dish management ────────────────────────────────
+let dishId = 0;
+
+function priceOptions() {
+  let h = '<option value="">— €</option>';
+  for (let i = 1; i <= 30; i++) h += `<option value="${i}">${i} €</option>`;
+  return h;
+}
+
+function addDish() {
+  const id = ++dishId;
+  const row = document.createElement('div');
+  row.className = 'dish-row';
+  row.id = `dr-${id}`;
+  row.innerHTML = `
+    <input type="text" class="dish-name" placeholder="Nome del piatto" autocomplete="off">
+    <select class="dish-price">${priceOptions()}</select>
+    <div class="check-col">
+      <input type="checkbox" class="dish-veg">
+      <span class="lbl-veg">Veg</span>
+    </div>
+    <div class="check-col">
+      <input type="checkbox" class="dish-gf">
+      <span class="lbl-gf">GF</span>
+    </div>
+    <button type="button" class="del-btn" title="Rimuovi" onclick="removeDish(${id})">✕</button>
+  `;
+  document.getElementById('dishList').appendChild(row);
+}
+
+function removeDish(id) {
+  const el = document.getElementById(`dr-${id}`);
+  if (el) el.remove();
+}
+
+document.getElementById('addDish').addEventListener('click', addDish);
+addDish();
+
+function getDishes() {
+  return [...document.querySelectorAll('.dish-row')].map(row => ({
+    name:  row.querySelector('.dish-name').value.trim(),
+    price: row.querySelector('.dish-price').value,
+    veg:   row.querySelector('.dish-veg').checked,
+    gf:    row.querySelector('.dish-gf').checked,
+  }));
+}
+
+function serializeMenu() {
+  return getDishes()
+    .filter(d => d.name && d.price)
+    .map(d => {
+      const flags = [];
+      if (d.veg) flags.push('Vegano');
+      if (d.gf)  flags.push('Senza glutine');
+      return `${d.name} — ${d.price} €` + (flags.length ? ` [${flags.join(', ')}]` : '');
+    })
+    .join('\n');
+}
+
+// ── Photo management ───────────────────────────────
+let photoCount = 0;
+const MAX_PHOTOS = 8;
+
+document.getElementById('photoAddBtn').addEventListener('click', () => {
+  if (photoCount >= MAX_PHOTOS) return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.name = 'foto';
+  input.accept = 'image/*';
+  input.style.display = 'none';
+  const id = ++photoCount;
+  input.id = `fi-${id}`;
+  document.getElementById('form').appendChild(input);
+  input.addEventListener('change', function () {
+    if (!this.files[0]) { this.remove(); photoCount--; return; }
+    const url = URL.createObjectURL(this.files[0]);
+    const item = document.createElement('div');
+    item.className = 'photo-item';
+    item.id = `pp-${id}`;
+    item.innerHTML = `<img src="${url}" alt=""><button type="button" class="rm" data-id="${id}" data-url="${url}">✕</button>`;
+    item.querySelector('.rm').addEventListener('click', function () {
+      const inp = document.getElementById(`fi-${this.dataset.id}`);
+      URL.revokeObjectURL(this.dataset.url);
+      if (inp) inp.remove();
+      item.remove();
+    });
+    document.getElementById('photoGrid').appendChild(item);
+    document.getElementById('photoErr').style.display = 'none';
+    if (photoCount >= MAX_PHOTOS) document.getElementById('photoAddBtn').disabled = true;
+  });
+  input.click();
+});
+
+// ── Validation ─────────────────────────────────────
+function validate() {
+  let ok = true;
+
+  const nameInput = document.getElementById('truckName');
+  const fName     = document.getElementById('f-name');
+  if (!nameInput.value.trim()) { fName.classList.add('invalid'); ok = false; }
+  else fName.classList.remove('invalid');
+
+  const validDishes = getDishes().filter(d => d.name && d.price);
+  const dishErr = document.getElementById('dishErr');
+  dishErr.style.display = validDishes.length ? 'none' : 'block';
+  if (!validDishes.length) ok = false;
+
+  const hasPhotos = document.querySelectorAll('[id^="fi-"]').length > 0;
+  const photoErr  = document.getElementById('photoErr');
+  photoErr.style.display = hasPhotos ? 'none' : 'block';
+  if (!hasPhotos) ok = false;
+
+  return ok;
+}
+
+// ── Submit ─────────────────────────────────────────
+document.getElementById('form').addEventListener('submit', function (e) {
+  if (!validate()) {
+    e.preventDefault();
+    document.querySelector('.invalid, .err-msg[style*="block"], #dishErr[style*="block"], #photoErr[style*="block"]')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  document.getElementById('menuData').value = serializeMenu();
+  // La form si invia naturalmente a FormSubmit
+});
+
+document.getElementById('truckName').addEventListener('input', () => {
+  document.getElementById('f-name').classList.remove('invalid');
+});
+</script>
+</body>
+</html>
