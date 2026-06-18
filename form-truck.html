@@ -17,7 +17,6 @@
       --border:      #e0cfa8;
       --error:       #c0392b;
       --green:       #2d7a4e;
-      --blue:        #1a6b8a;
     }
 
     body {
@@ -121,7 +120,7 @@
     /* ── Dish table ───────────────────────────────────── */
     .dish-header {
       display: grid;
-      grid-template-columns: 1fr 90px 50px 50px 28px;
+      grid-template-columns: 1fr 90px 1fr 28px;
       gap: .5rem;
       padding: 0 .5rem;
       margin-bottom: .35rem;
@@ -132,15 +131,13 @@
       text-transform: uppercase;
       letter-spacing: .08em;
       color: var(--brown-mid);
-      text-align: center;
     }
-    .dish-header span:first-child { text-align: left; }
 
     .dish-list { display: flex; flex-direction: column; gap: .5rem; }
 
     .dish-row {
       display: grid;
-      grid-template-columns: 1fr 90px 50px 50px 28px;
+      grid-template-columns: 1fr 90px 1fr 28px;
       gap: .5rem;
       align-items: center;
       background: var(--cream);
@@ -179,20 +176,28 @@
     }
     .dish-price:focus { outline: none; border-color: var(--amber); }
 
-    .check-col {
+    .diet-group {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: .1rem;
+      gap: .25rem;
     }
-    .check-col input[type="checkbox"] {
-      width: 1.05rem;
-      height: 1.05rem;
+    .diet-item {
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+      font-size: .76rem;
+      font-weight: 600;
+      color: var(--brown-mid);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .diet-item input[type="checkbox"] {
+      width: .9rem;
+      height: .9rem;
       accent-color: var(--amber);
       cursor: pointer;
+      flex-shrink: 0;
     }
-    .check-col .lbl-veg { font-size: .62rem; font-weight: 800; color: var(--green); }
-    .check-col .lbl-gf  { font-size: .62rem; font-weight: 800; color: var(--blue);  }
 
     .del-btn {
       background: none;
@@ -310,7 +315,8 @@
     @media (max-width: 520px) {
       .field-row { grid-template-columns: 1fr; }
       .dish-header { display: none; }
-      .dish-row { grid-template-columns: 1fr 80px; grid-template-rows: auto auto; row-gap: .4rem; }
+      .dish-row { grid-template-columns: 1fr 80px 28px; grid-template-rows: auto auto; }
+      .dish-row .diet-group { grid-column: 1 / 4; flex-direction: row; flex-wrap: wrap; gap: .3rem .75rem; }
     }
   </style>
 </head>
@@ -322,7 +328,7 @@
   <div class="grazie-card" id="grazie">
     <div class="icon">🍺</div>
     <h1>Scheda ricevuta!</h1>
-    <p>Grazie, Lorenzo ti contatterà presto per i dettagli del festival.</p>
+    <p>Grazie! Verrai contattato a breve per i dettagli del festival.</p>
   </div>
 
   <!-- Form -->
@@ -376,8 +382,7 @@
         <div class="dish-header">
           <span>Piatto</span>
           <span>Prezzo</span>
-          <span>Veg</span>
-          <span>GF</span>
+          <span>Indicazioni dietetiche</span>
           <span></span>
         </div>
 
@@ -386,8 +391,8 @@
         <button type="button" class="add-dish" id="addDish">+ Aggiungi piatto</button>
 
         <div class="dish-legend">
-          <strong>Veg</strong> = vegano &nbsp;·&nbsp; <strong>GF</strong> = senza glutine<br>
-          Se non spunti nulla è onnivoro e con glutine. Prezzo in euro interi (1 token = 1 €).
+          Se non spunti nulla il piatto è considerato onnivoro e con glutine.<br>
+          Prezzo in euro interi (1 token = 1 €, no importi con virgola).
         </div>
       </div>
 
@@ -407,7 +412,7 @@
       <div class="card">
         <div class="card-title">Note (opzionale)</div>
         <div class="field" style="margin:0">
-          <textarea name="Note" id="note" placeholder="Orari particolari, allergeni, esigenze logistiche…"></textarea>
+          <textarea name="Note" id="note" placeholder="Orari, note sull'allestimento, informazioni utili…"></textarea>
         </div>
       </div>
 
@@ -447,13 +452,10 @@ function addDish() {
   row.innerHTML = `
     <input type="text" class="dish-name" placeholder="Nome del piatto" autocomplete="off">
     <select class="dish-price">${priceOptions()}</select>
-    <div class="check-col">
-      <input type="checkbox" class="dish-veg">
-      <span class="lbl-veg">Veg</span>
-    </div>
-    <div class="check-col">
-      <input type="checkbox" class="dish-gf">
-      <span class="lbl-gf">GF</span>
+    <div class="diet-group">
+      <label class="diet-item"><input type="checkbox" class="dish-veg"> Vegano</label>
+      <label class="diet-item"><input type="checkbox" class="dish-vgt"> Vegetariano</label>
+      <label class="diet-item"><input type="checkbox" class="dish-gf"> Gluten free</label>
     </div>
     <button type="button" class="del-btn" title="Rimuovi" onclick="removeDish(${id})">✕</button>
   `;
@@ -473,6 +475,7 @@ function getDishes() {
     name:  row.querySelector('.dish-name').value.trim(),
     price: row.querySelector('.dish-price').value,
     veg:   row.querySelector('.dish-veg').checked,
+    vgt:   row.querySelector('.dish-vgt').checked,
     gf:    row.querySelector('.dish-gf').checked,
   }));
 }
@@ -483,7 +486,8 @@ function serializeMenu() {
     .map(d => {
       const flags = [];
       if (d.veg) flags.push('Vegano');
-      if (d.gf)  flags.push('Senza glutine');
+      if (d.vgt) flags.push('Vegetariano');
+      if (d.gf)  flags.push('Gluten free');
       return `${d.name} — ${d.price} €` + (flags.length ? ` [${flags.join(', ')}]` : '');
     })
     .join('\n');
