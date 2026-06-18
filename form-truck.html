@@ -341,7 +341,7 @@
 
     <form
       id="form"
-      action="https://formsubmit.co/lorenzo.monacci@gmail.com"
+      action="https://formsubmit.co/info.scaccomalto@gmail.com"
       method="POST"
       enctype="multipart/form-data"
       novalidate
@@ -351,7 +351,6 @@
       <input type="hidden" name="_template" value="table">
       <input type="hidden" name="_captcha" value="false">
       <input type="hidden" name="_next" id="nextUrl" value="">
-      <input type="hidden" name="Menu" id="menuData">
 
       <!-- Dati truck -->
       <div class="card">
@@ -382,7 +381,7 @@
         <div class="dish-header">
           <span>Piatto</span>
           <span>Prezzo</span>
-          <span>Indicazioni dietetiche</span>
+          <span></span>
           <span></span>
         </div>
 
@@ -557,8 +556,25 @@ document.getElementById('form').addEventListener('submit', function (e) {
       ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
-  document.getElementById('menuData').value = serializeMenu();
-  // La form si invia naturalmente a FormSubmit
+
+  // Rimuovi eventuali campi piatto da submit precedenti
+  document.querySelectorAll('[data-dish-field]').forEach(el => el.remove());
+
+  // Crea un campo separato per ogni piatto — arriva come riga distinta nell'email
+  getDishes()
+    .filter(d => d.name && d.price)
+    .forEach((d, i) => {
+      const flags = [];
+      if (d.veg) flags.push('Vegano');
+      if (d.vgt) flags.push('Vegetariano');
+      if (d.gf)  flags.push('Gluten free');
+      const inp = document.createElement('input');
+      inp.type = 'hidden';
+      inp.name = `Piatto ${i + 1}`;
+      inp.value = `${d.price} € — ${d.name}` + (flags.length ? `  [${flags.join(', ')}]` : '');
+      inp.dataset.dishField = '1';
+      document.getElementById('form').appendChild(inp);
+    });
 });
 
 document.getElementById('truckName').addEventListener('input', () => {
